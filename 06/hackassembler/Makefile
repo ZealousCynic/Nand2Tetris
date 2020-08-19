@@ -41,7 +41,9 @@ OBJECTS		= $(ASOBJECTS) $(COBJECTS) $(CPPOBJECTS)
 
 	### Flags ###
 
-CFLAGS		+= -Wall
+CFLAGS		+= -Wall -g
+
+CPPFLAGS	+= -Wall -g
 
 	### Libraries ###
 	
@@ -49,7 +51,7 @@ CFLAGS		+= -Wall
 
 #LIB			= -lkernel32
 
-all: directory $(BINDIR)$(PROGRAM)$(BINEXT)
+all: directory clean $(BINDIR)$(PROGRAM)$(BINEXT)
 
 debug:
 	@echo $(OBJECTS)
@@ -59,19 +61,19 @@ directory:
 	@mkdir -p $(DIR)
 
 $(BINDIR)$(PROGRAM)$(BINEXT): $(OBJECTS)
-	$(CPP) $(CFLAGS) $^ -o $@ $(SEARCHDIR) $(LIB)
+	$(CPP) $(CPPFLAGS) $^ -o $@ $(SEARCHDIR) $(LIB)
 
 $(OBJDIR)%$(OBJEXT): $(CDIR)%.c
 	$(CC) $(CFLAGS) -c $^ -o $@ -g -Wall
 	
 $(OBJDIR)%$(OBJEXT): $(CPPDIR)%.cpp
-	$(CPP) $(CFLAGS) -c $^ -o $@ -g -Wall
+	$(CPP) $(CPPFLAGS) -c $^ -o $@ -g -Wall
 
 $(OBJDIR)%$(OBJEXT): $(ASDIR)%.s
 	$(AS) -c $^ -o $@
 
 clean:
 	rm -f $(OBJDIR)*
-	rm -f $(BINDIR)*
+	rm -f $(BINDIR)*.exe
 	
 .PHONY: all clean debug

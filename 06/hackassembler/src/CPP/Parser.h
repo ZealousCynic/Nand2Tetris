@@ -6,6 +6,8 @@
 #include<iostream>
 #include<fstream>
 
+#include "SymbolTable.h"
+
 extern "C" {
 	#include "./../C/enums.h"
 }
@@ -17,10 +19,14 @@ public:
 	Parser(std::ifstream& toParse);
 
 	std::ifstream& input;
-	bool hasMoreCommands;
-	commandType currentCommand;
+	std::string processedInput;
 	std::string current;
+	std::string currentSymbol;
 	std::string toWrite;
+	bool hasMoreCommands;
+
+	commandType currentCommand;
+	SymbolTable symt;
 
 	void scan();
 
@@ -33,8 +39,11 @@ public:
 	~Parser();
 
 private:
+	void printTemp();
 	void checkInstructionType();
-	std::string convertToBinary();
+	bool findA();
+	std::string scanSymbol();
+	std::string convertToBinary(int toConvert);
 	bool checkForSymbol();
 };
 

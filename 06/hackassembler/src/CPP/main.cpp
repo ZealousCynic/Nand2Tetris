@@ -49,5 +49,9 @@ int main() {
 
 	print(&p.toWrite);
 
+	//std::cout << "Symbol table: \n";
+
+	//p.symt.printTable();
+
 	return 0;
 }

@@ -1,101 +1,152 @@
 #include "Parser.h"
 
-Parser::Parser(std::ifstream& toParse)
-	:input(toParse)
+Parser::Parser(std::string toParse)
 {
-
+	filename = toParse;
 }
 
 void Parser::scan() {
 
-	std::cout << "Parser input: \n";
+	input.open(filename, std::ifstream::in);
 
-	while (!input.eof())
+	if (input.is_open()) {
+
+		while (!input.eof())
+		{
+			cleanInput();
+		}
+		input.close();
+	}
+	else
+		std::cout << "Could not open assembly file.\n";
+
+	printTemp();
+
+	in2.open("temp", std::ifstream::in);
+
+	if (in2.is_open())
 	{
-		advance();
+		lineCount = 0;
 
-		processedInput.append(current);
+		while (!in2.eof()) {
 
-		printTemp();
-	}
+			advance();
 
-	std::ifstream processed("temp", std::ifstream::in);
-	input = &processed;
+			if (current.empty())
+				continue;
 
-	while (!input.eof()) {
+			std::string converted;
+			checkInstructionType();
 
-		std::string converted;
-		checkInstructionType();
+			switch (currentCommand) {
 
-		switch (currentCommand) {
-
-		case A_COMMAND:
-		{
-			if (checkForSymbol())
+			case A_COMMAND:
 			{
-				currentSymbol = scanSymbol();
+				if (checkForSymbol())
+				{
+					currentSymbol = scanSymbol();
 
-				converted = symbol();
+					converted = symbol();
 
-				toWrite.append(converted + "\n");
-			}
-			else
-			{
-				std::string temp = current;
+					toWrite.append(converted + "\n");
+				}
+				else
+				{
+					std::string temp = current;
 
-				temp.erase(0, 1);
+					temp.erase(0, 1);
 
-				int toConvert = std::stoi(temp);
+					int toConvert = std::stoi(temp);
 
-				converted = convertToBinary(toConvert);
+					converted = convertToBinary(toConvert);
 
-				toWrite.append(converted + "\n");
-			}
-			break;
-		}
-		case C_COMMAND:
-		{
-
-			std::string temp = "111";
-			temp.append(findA() ? "1" : "0");
-
-			temp.append(comp());
-
-			temp.append(dest());
-
-			temp.append(jump());
-
-			std::cout << temp << '\n';
-
-			toWrite.append(temp);
+					toWrite.append(converted + "\n");
+				}
 				break;
+			}
+			case C_COMMAND:
+			{
+				std::string temp = "111";
+
+				temp.append(findA() ? "1" : "0");
+
+				temp.append(comp());
+
+				temp.append(dest());
+
+				temp.append(jump());
+
+				toWrite.append(temp + '\n');
+
+				break;
+			}
+			case L_COMMAND:
+				if (checkForLabel()) {
+
+					currentSymbol = scanLabel();
+
+					converted = label();
+
+					toWrite.append(converted + "\n");
+
+				}
+				else
+					std::cout << "Something bad happened. \n";
+				break;
+			default:
+				std::cout << "Something bad happened. \n";
+				break;
+			}
 		}
-		case L_COMMAND:
-			std::cout << "Something bad happened. \n";
-			break;
-		default:
-			std::cout << "Something bad happened. \n";
-			break;
-		}
+
+		in2.close();
+		std::cout << "Writing: \n" << toWrite;
 	}
+	else
+		std::cout << "File could not be opened!\n";
+
 }
 
 void Parser::advance() {
 
+	std::getline(in2, current);
+	lineCount++;
+}
+
+//This is the most horrible thing I have written in years and years. Please kill it with fire.
+void Parser::cleanInput() {
+
 	// Get next line in stream
 	std::getline(input, current);
 
+	if (current.length() <= 2 || current.empty() || current[0] == '\n' || current[0] == '\r')
+		return;
+
 	for (int i = 0; i < current.length(); i++)
+	{
+		if (current[i] == ' ')
+			current.erase(i, 1);
+
 		// Is the current and next character '/'?
 		if (current[i] == '/' && current[i + 1] == '/')
-			//If so, erase the remainder of the the string
+			//If so, erase the remainder of the the string, except the line break.
 			current.erase(i, current.length() - i);
-
+		if (current[i] == '\r' && current[i + 1] == '\r')
+			current.erase(i, 2);
+	}
+	while (current[0] == '\r')
+		current.erase(0, 1);
 	// Is the string empty or a line break? If so, start over.
-	if (current.length() <= 1)
-		advance();
+	if (current.empty())
+		return;
+	if (current[0] == '\n')
+		return;
+	if (current[current.length() - 1] != '\r')
+		current += '\r';
 
-	std::cout << current << "\n";
+	current += '\n';
+	std::cout << current;
+	processedInput.append(current);
 }
 
 void Parser::checkInstructionType() {
@@ -107,7 +158,7 @@ void Parser::checkInstructionType() {
 	case '@':
 		currentCommand = A_COMMAND;
 		break;
-	case '$':
+	case '(':
 		currentCommand = L_COMMAND;
 		break;
 	default:
@@ -121,10 +172,14 @@ void Parser::checkInstructionType() {
 bool Parser::checkForSymbol() {
 
 	if (std::isdigit(current[1]))
-	{
 		return false;
-	}
 	return true;
+}
+
+bool Parser::checkForLabel() {
+	if (current[0] == '(')
+		return true;
+	return false;
 }
 
 std::string Parser::convertToBinary(int toConvert) {
@@ -164,10 +219,40 @@ std::string Parser::scanSymbol() {
 	}
 }
 
+std::string Parser::scanLabel() {
+
+	std::string sub;
+
+	sub = current.substr(1, current.length() - 3);
+
+	return sub;
+}
+
 bool Parser::findA() {
 	if (current[0] == 'M' || current[1] == 'M')
 		return true;
 	return false;
+}
+
+std::string Parser::label() {
+	
+	std::string toReturn;
+	int address;
+
+	if (symt.contains(currentSymbol))
+	{
+		address = symt.getAddress(currentSymbol);
+	}
+	else {
+		address = lineCount + 1;
+
+		symt.addEntry(currentSymbol, address);
+	}
+
+	toReturn = convertToBinary(address);
+
+	return toReturn;
+
 }
 
 std::string Parser::symbol() {
@@ -189,11 +274,12 @@ std::string Parser::symbol() {
 
 	return toReturn;
 }
+
 std::string Parser::dest() {
 
 	std::string dest = "null";
 
-	for (int i = 0; i < current.length();i++)
+	for (int i = 0; i < current.length(); i++)
 	{
 		if (current[i] == '=')
 			dest = current.substr(0, i);
@@ -201,26 +287,67 @@ std::string Parser::dest() {
 
 	return destinationMap.find(dest)->second;
 }
+
+//Dumb solution is dumb, I just wanted it to work at this point.
 std::string Parser::comp() {
 
 	std::string comp = "000000";
+	int compBegin, compEnd = 0;
+	bool jumping = false;
 
-	return comp;
+	for (int i = 0; i < current.length(); i++)
+	{
+		if (current[i] == '=')
+			compBegin = i + 1;
+		if (current[i] == ';')
+		{
+			compEnd = i - 1;
+			jumping = true;
+		}
+	}
+
+	if (compEnd == 0 && jumping)
+		compEnd = 1;
+	if (compEnd == 0)
+		compEnd = current.length() - 1;
+	
+
+	comp = current.substr(compBegin, compEnd - compBegin);
+
+	return instructionMap.find(comp)->second;
 }
 std::string Parser::jump() {
 
-	std::string jump = "000";
+	std::string jump = "null";
 
-		return jump;
+	int jmpBegin = 0;
+
+	for (int i = 0; i < current.length(); i++)
+	{
+		if (current[i] == ';')
+			jmpBegin = i + 1;
+	}
+
+	if (jmpBegin != 0)
+		jump = current.substr(jmpBegin, current.length() - jmpBegin - 1);
+
+
+	return jumpMap.find(jump)->second;
 }
 
 void Parser::printTemp() {
 
 	std::filebuf fb;
 	fb.open("temp", std::ios::out);
-	std::ostream ostream(&fb);
-	ostream << processedInput;
-	fb.close();
+	if (fb.is_open()) {
+
+		std::ostream os(&fb);
+		os << processedInput;
+		fb.close();
+	}
+	else {
+		std::cout << "Could not open file for writing.";
+	}
 }
 
 Parser::~Parser() {

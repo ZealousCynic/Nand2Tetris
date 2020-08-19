@@ -7,21 +7,22 @@
 #include<fstream>
 
 #include "SymbolTable.h"
+#include "enums.h"
+#include "maps.h"
 
-extern "C" {
-	#include "./../C/enums.h"
-}
 
 class Parser {
 
 public:
-	// Opens the input file and gets ready to parse it
-	Parser(std::ifstream& toParse);
 
-	std::ifstream& input;
-	std::string processedInput;
-	std::string current;
-	std::string currentSymbol;
+	// Opens the input file and gets ready to parse it
+	Parser(std::string toParse);
+
+	std::ifstream in2;
+	std::ifstream input;
+
+	std::string filename;
+
 	std::string toWrite;
 	bool hasMoreCommands;
 
@@ -35,15 +36,26 @@ public:
 	std::string dest();
 	std::string comp();
 	std::string jump();
+	std::string label();
 
 	~Parser();
 
 private:
+
+	int lineCount; // For labels
+
+	std::string processedInput;
+	std::string current;
+	std::string currentSymbol;
+
+	void cleanInput();
 	void printTemp();
 	void checkInstructionType();
 	bool findA();
 	std::string scanSymbol();
+	std::string scanLabel();
 	std::string convertToBinary(int toConvert);
+	bool checkForLabel();
 	bool checkForSymbol();
 };
 

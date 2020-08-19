@@ -1,31 +1,20 @@
-@2
-M=A
-@10
-D=A
 @20
-M=D
-
-@my
-M=D
-@42
 D=A
-@derp
-M=D
-
-@R0
-M=D
 @R1
-M=D
-D=M-1
-D;JGT
 
-//This is a comment and should not show in the parser
+// I am a comment to be removed
 
-@62
-M=D // This is an inline comment.
-@32
 M=D
-@my
-M=D
-M+1
-D+1
+@42 // I am an inline comment to be removed
+M=A
+@woop
+(RETURN)
+M=A-1
+@RETURN
+@10
+@lerp
+M=D+1
+M;JGT
+@END
+(END)
+0;JMP

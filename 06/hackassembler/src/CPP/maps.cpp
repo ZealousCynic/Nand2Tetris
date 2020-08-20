@@ -31,6 +31,19 @@ std::map<std::string, std::string> instructionMap = {
 	{"D|M", "010101"},
 };
 
+std::map<std::string, std::string> instructionMapB = {
+		{"M", "110000"},
+	{"!M", "110001"},
+	{"-M", "110011"},
+	{"M+1", "110111"},
+	{"M-1", "110010"},
+	{"D+M", "000010"},
+	{"D-M", "010011"},
+	{"M-D", "000111"},
+	{"D&M", "000000"},
+	{"D|M", "010101"},
+};
+
 std::map<std::string, std::string> destinationMap = {
 	{"null", "000"},
 	{"M", "001"},

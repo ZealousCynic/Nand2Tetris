@@ -15,18 +15,34 @@ void Parser::scan() {
 		{
 			cleanInput();
 		}
+	}
+	input.close();
+
+	printTemp("temp", cleanedInput);
+
+	input.open("temp", std::ifstream::in);
+
+	if (input.is_open())
+	{
+		lineCount = -1;
+
+		while (!input.eof())
+		{
+			scanForLabel();
+		}
+
 		input.close();
 	}
 	else
 		std::cout << "Could not open assembly file.\n";
 
-	printTemp();
+	printTemp("tempProc", processedInput);
 
-	in2.open("temp", std::ifstream::in);
+	in2.open("tempProc", std::ifstream::in);
 
 	if (in2.is_open())
 	{
-		lineCount = 0;
+		lineCount = -1;
 
 		while (!in2.eof()) {
 
@@ -100,7 +116,6 @@ void Parser::scan() {
 		}
 
 		in2.close();
-		std::cout << "Writing: \n" << toWrite;
 	}
 	else
 		std::cout << "File could not be opened!\n";
@@ -111,6 +126,25 @@ void Parser::advance() {
 
 	std::getline(in2, current);
 	lineCount++;
+}
+
+void Parser::scanForLabel() {
+
+	std::getline(input, current);
+	lineCount++;
+
+	if (current[0] == '(')
+	{
+		currentSymbol = scanLabel();
+
+		std::string labeladdress = label();
+		lineCount--;
+	}
+	else
+	{
+		current += '\n';
+		processedInput.append(current);
+	}
 }
 
 //This is the most horrible thing I have written in years and years. Please kill it with fire.
@@ -145,8 +179,7 @@ void Parser::cleanInput() {
 		current += '\r';
 
 	current += '\n';
-	std::cout << current;
-	processedInput.append(current);
+	cleanedInput.append(current);
 }
 
 void Parser::checkInstructionType() {
@@ -229,13 +262,27 @@ std::string Parser::scanLabel() {
 }
 
 bool Parser::findA() {
-	if (current[0] == 'M' || current[1] == 'M')
+
+	std::string toFind = "";
+	int start = 0, end = 0;
+
+	for (int i = 0; i < current.length(); i++)
+	{
+		if (current[i] == '=')
+			start = i + 1;
+		if (current[i] == ';' || i == current.length() - 1)
+			end = i;
+	}
+
+	toFind = current.substr(start, end - start);
+
+	if (instructionMapB.find(toFind) != instructionMapB.end())
 		return true;
 	return false;
 }
 
 std::string Parser::label() {
-	
+
 	std::string toReturn;
 	int address;
 
@@ -244,7 +291,7 @@ std::string Parser::label() {
 		address = symt.getAddress(currentSymbol);
 	}
 	else {
-		address = lineCount + 1;
+		address = lineCount;
 
 		symt.addEntry(currentSymbol, address);
 	}
@@ -310,7 +357,7 @@ std::string Parser::comp() {
 		compEnd = 1;
 	if (compEnd == 0)
 		compEnd = current.length() - 1;
-	
+
 
 	comp = current.substr(compBegin, compEnd - compBegin);
 
@@ -335,19 +382,24 @@ std::string Parser::jump() {
 	return jumpMap.find(jump)->second;
 }
 
-void Parser::printTemp() {
+void Parser::printTemp(std::string filename, std::string toPrint) {
 
 	std::filebuf fb;
-	fb.open("temp", std::ios::out);
+	fb.open(filename, std::ios::out);
 	if (fb.is_open()) {
 
 		std::ostream os(&fb);
-		os << processedInput;
+		os << toPrint;
 		fb.close();
 	}
 	else {
 		std::cout << "Could not open file for writing.";
 	}
+}
+
+void Parser::removeLabel() {
+
+	current.erase(0, current.length());
 }
 
 Parser::~Parser() {

@@ -40,16 +40,16 @@ void print(std::string* toPrint) {
 int main() {
 
 	introduction();
-	filename = "test.asm";
+	filename = "Pong.asm";
 	//std::unique_ptr<std::ifstream> fsPtr(new std::ifstream(filename.c_str(), std::ifstream::in));
 
 	Parser p(filename);
 
 	p.scan();
 
-	std::cout << "Symbol table: \n";
+	// std::cout << "Symbol table: \n";
 
-	p.symt.printTable();
+	// p.symt.printTable();
 
 	print(&p.toWrite);
 

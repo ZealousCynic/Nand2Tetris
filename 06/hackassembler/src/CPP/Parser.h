@@ -45,18 +45,21 @@ private:
 	int lineCount; // For labels
 
 	std::string processedInput;
+	std::string cleanedInput;
 	std::string current;
 	std::string currentSymbol;
 
 	void cleanInput();
-	void printTemp();
+	void printTemp(std::string filename, std::string toPrint);
 	void checkInstructionType();
+	void scanForLabel();
 	bool findA();
 	std::string scanSymbol();
 	std::string scanLabel();
 	std::string convertToBinary(int toConvert);
 	bool checkForLabel();
 	bool checkForSymbol();
+	void removeLabel();
 };
 
 #endif

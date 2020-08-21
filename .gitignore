@@ -1,3 +1,9 @@
+.vscode/*
+*.code-workspace
+.history/
+.vs/*
+*.vs
+
 *.cmp
 *.tst
 *.out

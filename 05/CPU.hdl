@@ -39,43 +39,5 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-	
-	Not(in=instruction[15], out=not15);	    
-	Mux16(a=ALUout, b=instruction, sel=not15, out=mux1out); // MUX Instruction/ALU Output
-	
-	Or(a=not15, b=instruction[5], out=loadARegister);	
-	ARegister(in=mux1out, load=loadARegister, out=registerAOut, out[0..14]=addressM); // A register
-	
-	Mux16(a=registerAOut, b=inM, sel=instruction[12], out=mux2Out); // Mux A register/inMemory
-	
-	//Prepare ALU control bits
-	
-	ALU(x=registerDOut, y=mux2Out, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=outM, out=ALUout, zr=isZero, ng=isNegative); //Compute input, output dependent on control	
-	
-	And(a=instruction[15], b=instruction[4], out=loadDRegister);
-	DRegister(in=ALUout, load=loadDRegister, out=registerDOut); // D register
-	
-	And(a=instruction[15], b=instruction[3], out=writeM);
-	
-	//Prepare jump bits: j1-2-3
-	
-	Not(in=isNegative, out=notNegative);
-	Not(in=isZero, out=notZero);
-	
-	And(a=instruction[0], b=instruction[15], out=jgt);	
-	And(a=notNegative, b=notZero, out=positive);
-	And(a=jgt, b=positive, out=j3);
-	
-	And(a=instruction[1], b=instruction[15], out=jeq);
-	And(a=jeq, b=isZero, out=j2);
-	
-	And(a=instruction[2], b=instruction[15], out=jlt);
-	And(a=jlt, b=isNegative, out=j1);
-	
-	//Do we jump?
-	
-	Or(a=j1, b=j2, out=j12);
-	Or(a=j12, b=j3, out=jump);
-	
-	PC(in=registerAOut, load=jump,inc=true,reset=reset, out[0..14]=pc); // Tick-tock goes the program
+    // Put your code here:
 }

@@ -1,0 +1,7 @@
+Include and library directories are left empty.
+
+The object directory is for intermediate compilation steps and, strictly speaking,
+since no libraries figure, not needed.
+
+I've still chosen to keep the compilation process seperated in steps so as to 
+accomodate future library linking.

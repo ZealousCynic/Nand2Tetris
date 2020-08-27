@@ -8,121 +8,133 @@ Parser::Parser(std::ifstream &fRef)
 void Parser::scan()
 {
     int fileCount = 0;
+    std::string fileext;
 
     toWrite = "";
     lineNumber = 0;
 
     std::string directory = chooseDirectory();
     std::vector<std::string> files = fh.getFilesInDirectory(directory);
-    
+
     addAsmPrologue();
 
     for (std::vector<std::string>::iterator t = files.begin(); t != files.end(); ++t, fileCount++)
     {
         std::string currentFile = files[fileCount];
 
-        input.open(files[fileCount], std::ios::in);
-
-        if (input.is_open())
-        {
-
-            while (!input.eof())
+        if(sh.split(currentFile, '.')[1] != "vm")
             {
-
-                std::string current = advance();
-
-                current = cleanInput(current);
-                char delim = ' ';
-
-                std::vector<std::string> instructionParts = sh.split(current, delim);
-
-                std::string splitInstruction = instructionParts[0];
-                std::cout << splitInstruction << '\n';
-
-                Instruction currentInstruction = getCurrentInstruction(instructionParts[0]);
-
-                std::string toReplace;
-
-                switch (currentInstruction)
-                {
-                // The same logic is used in all cases. To save on LoC, just fall through.
-                case ADD:
-                case SUB:
-                case AND:
-                case OR:
-                case NOT:
-                    toWrite.append(getAssemblyInstruction(currentInstruction));
-                    break;
-                case PUSH:
-                    push(instructionParts);
-                    break;
-                case POP:
-                    pop(instructionParts);
-                    break;
-                // The same logic is used in all cases. To save on LoC, just fall through.
-                case NEG:
-                case EQ:
-                case GT:
-                case LT:
-                    toReplace = getAssemblyInstruction(currentInstruction);
-
-                    for (int i = 0; i < toReplace.length(); i++)
-                    {
-                        if (toReplace[i] == '%' && toReplace[i + 1] == 'i')
-                        {
-                            toReplace.replace(i, 2, std::to_string(lineNumber));
-                        }
-                    }
-                    toWrite.append(toReplace);
-                    break;
-                case FUNCTION:
-                    toWrite.append("(" + instructionParts[1] + ")\r\n");
-                    break;
-                case IF:
-
-                    toReplace = getAssemblyInstruction(currentInstruction);
-
-                    for (int i = 0; i < toReplace.length(); i++)
-                    {
-                        if (toReplace[i] == '%' && toReplace[i + 1 == 's'])
-                            toReplace.replace(i, 2, instructionParts[1]);
-                    }
-
-                    toWrite.append(toReplace);
-                    break;
-                case RETURN:
-
-                    break;
-                case CALL:
-
-                    break;
-                case LABEL:
-                    toWrite.append("(" + instructionParts[1] + ")\r\n");
-                    break;
-                case INVALID_INSTRUCTION:
-                    break;
-                default:
-                    std::cout << "Somthing went wrong during instruction translation. Line: " << lineNumber << '\n';
-                    break;
-                }
-
-                lineNumber++;
+                std::cout << "Skipping " << currentFile << '\n';
+                continue;
             }
-
-            input.close();
-        }
-        else
-        {
-            std::cout << "Could not open the file.";
-            toWrite = "ERROR";
-            print("./" + directory + "/ERROR.txt", toWrite);
-        }
+            
+        readFile(currentFile);
     }
 
     addAsmEpilogue();
 
     std::string toPrintName = "./" + directory + "/" + directory + ".asm";
     print(toPrintName, toWrite);
+}
+
+void Parser::readFile(std::string filename)
+{
+    input.open(filename, std::ios::in);
+
+    if (input.is_open())
+    {
+
+        while (!input.eof())
+        {
+
+            std::string current = advance();
+
+            current = cleanInput(current);
+            char delim = ' ';
+
+            std::vector<std::string> instructionParts = sh.split(current, delim);
+
+            std::string splitInstruction = instructionParts[0];
+            std::cout << splitInstruction << '\n';
+
+            Instruction currentInstruction = getCurrentInstruction(instructionParts[0]);
+
+            std::string toReplace;
+
+            switch (currentInstruction)
+            {
+            // The same logic is used in all cases. To save on LoC, just fall through.
+            case ADD:
+            case SUB:
+            case AND:
+            case OR:
+            case NOT:
+                toWrite.append(getAssemblyInstruction(currentInstruction));
+                break;
+            case PUSH:
+                push(instructionParts);
+                break;
+            case POP:
+                pop(instructionParts);
+                break;
+            // The same logic is used in all cases. To save on LoC, just fall through.
+            case NEG:
+            case EQ:
+            case GT:
+            case LT:
+                toReplace = getAssemblyInstruction(currentInstruction);
+
+                for (int i = 0; i < toReplace.length(); i++)
+                {
+                    if (toReplace[i] == '%' && toReplace[i + 1] == 'i')
+                    {
+                        toReplace.replace(i, 2, std::to_string(lineNumber));
+                    }
+                }
+                toWrite.append(toReplace);
+                break;
+            case FUNCTION:
+                toWrite.append("(" + instructionParts[1] + ")\r\n");
+                break;
+            case IF:
+
+                toReplace = getAssemblyInstruction(currentInstruction);
+
+                for (int i = 0; i < toReplace.length(); i++)
+                {
+                    if (toReplace[i] == '%' && toReplace[i + 1 == 's'])
+                        toReplace.replace(i, 2, instructionParts[1]);
+                }
+
+                toWrite.append(toReplace);
+                break;
+            case RETURN:
+
+                break;
+            case CALL:
+
+                break;
+            case LABEL:
+                toWrite.append("(" + instructionParts[1] + ")\r\n");
+                break;
+            case INVALID_INSTRUCTION:
+                break;
+            default:
+                std::cout << "Somthing went wrong during instruction translation. Line: " << lineNumber << '\n';
+                break;
+            }
+
+            lineNumber++;
+        }
+
+        input.close();
+    }
+    else
+    {
+        std::cout << "Could not open the file.";
+        toWrite = "ERROR";
+        print("./" + filename + "/ERROR.txt", toWrite);
+    }
 }
 
 std::string Parser::advance()

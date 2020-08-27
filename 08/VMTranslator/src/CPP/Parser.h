@@ -31,6 +31,7 @@ private:
     std::ifstream& input;
 
     void print(std::string filename, std::string toPrint);
+    void readFile(std::string filename);
 
     std::string chooseDirectory();
     std::string cleanInput(std::string toClean);

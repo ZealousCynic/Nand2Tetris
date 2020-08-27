@@ -1,11 +1,18 @@
 #include <iostream>
+#include <fstream>
+#include <String>
+
 #include "Parser.h"
 
 int main() {
 
-	std::cout << "Hello, VM!";
+	std::ifstream fstream;
 
-	Parser p();
+	std::ifstream& fRef = fstream;
+
+	Parser p(fRef);
+
+	p.scan();
 
 	return 0;
 }

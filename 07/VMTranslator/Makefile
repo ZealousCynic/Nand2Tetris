@@ -6,7 +6,7 @@ LD			= ld
 
 	### Target ###
 
-PROGRAM		= parser
+PROGRAM		= VMTranslator
 
 	### File extensions ###
 ASEXT		= .s

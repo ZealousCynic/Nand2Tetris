@@ -2,11 +2,13 @@
 #define PARSER_H
 
 #include<iostream>
+#include <cstdio>
 #include <fstream>
 #include <string>
 #include <vector>
 
 #include "StringHandler.h"
+#include "FileHandler.h"
 #include "Maps.h"
 
 class Parser {
@@ -25,11 +27,12 @@ private:
 
     int lineNumber;
     StringHandler sh;
+    FileHandler fh;
     std::ifstream& input;
 
     void print(std::string filename, std::string toPrint);
 
-    std::string chooseFile();
+    std::string chooseDirectory();
     std::string cleanInput(std::string toClean);
 
     Instruction getCurrentInstruction(std::string toCompare);

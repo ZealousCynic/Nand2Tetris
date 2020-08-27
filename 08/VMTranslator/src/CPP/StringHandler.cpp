@@ -63,3 +63,4 @@ std::vector<std::string> StringHandler::split(std::string toSplit, char delimite
     }
     return result;
 }
+

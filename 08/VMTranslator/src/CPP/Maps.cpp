@@ -381,8 +381,8 @@ const std::unordered_map<std::string, Instruction> InstructionMap = {
     {"FUNCTION", FUNCTION},
     {"IF-GOTO", IF},
     {"RETURN", RETURN},
-    {"LABEL", LABEL}
-    {"CALL", CALL}
+    {"LABEL", LABEL},
+    {"CALL", CALL},
 };
 
 #pragma endregion

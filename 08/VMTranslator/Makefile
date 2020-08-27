@@ -43,7 +43,7 @@ OBJECTS		= $(ASOBJECTS) $(COBJECTS) $(CPPOBJECTS)
 
 CFLAGS		+= -Wall -g
 
-CPPFLAGS	+= -Wall -g
+CPPFLAGS	+= -Wall -g -std=c++17
 
 	### Libraries ###
 	

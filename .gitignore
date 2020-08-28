@@ -4,6 +4,7 @@
 .history/
 .vs/*
 *.vs
+*launch.json
 
 *.cmp
 *.hack
